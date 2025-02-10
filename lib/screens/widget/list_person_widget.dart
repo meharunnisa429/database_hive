@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:database_hive_2/database/functions/db_functions.dart';
 import 'package:database_hive_2/database/model/person.dart';
 import 'package:database_hive_2/main.dart';
@@ -31,12 +33,12 @@ class ListPersonWidget extends StatelessWidget {
                       onPressed: () {
                         // take data to update
                         callback(person, index);
-                        
                       },
                       icon: const Icon(Icons.edit),
                     ),
                     IconButton(
                       onPressed: () async {
+                        log("deleting here");
                         deletePerson(index);
                       },
                       color: Colors.red,

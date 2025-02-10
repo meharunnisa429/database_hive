@@ -13,5 +13,6 @@ void updatePerson(Person person, int indexToUpdate) async {
 
 // delete person
 void deletePerson(int index) async {
-  await boxPerson.delete(index);
+  await boxPerson.deleteAt(index);
+ 
 }
