@@ -10,23 +10,33 @@ class AddPersonWidget extends StatefulWidget {
   final TextEditingController ageController;
   final FocusNode nameFocusNode;
   final FocusNode ageFocusNode;
-  const AddPersonWidget({
-    Key? key,
-    required this.nameController,
-    required this.ageController,
-    required this.nameFocusNode,
-    required this.ageFocusNode,
-  }) : super(key: key);
+  final ValueNotifier<SaveButtonMode> saveButtonMode;
+  final ValueNotifier<int?> indexToUpdate;
+  const AddPersonWidget(
+      {super.key,
+      required this.nameController,
+      required this.ageController,
+      required this.nameFocusNode,
+      required this.ageFocusNode,
+      required this.saveButtonMode,
+      required this.indexToUpdate});
 
   @override
   State<AddPersonWidget> createState() => _AddPersonWidgetState();
 }
 
 class _AddPersonWidgetState extends State<AddPersonWidget> {
-  
   void _unFocusAllFocusNode() {
     widget.nameFocusNode.unfocus();
     widget.ageFocusNode.unfocus();
+  }
+
+  void _showSnackbar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.red,
+      behavior: SnackBarBehavior.floating,
+    ));
   }
 
   @override
@@ -64,37 +74,46 @@ class _AddPersonWidgetState extends State<AddPersonWidget> {
         ),
 
         // save or update button
-        ElevatedButton(
-          onPressed: () {
-            if (saveButtonMode == SaveButtonMode.save) {
-              // To save
-              final person = Person(widget.nameController.text.trim(),
-                  int.tryParse(widget.ageController.text.trim()) ?? 0);
-              addPerson(person);
-              widget.nameController.clear();
-              widget.ageController.clear();
-              _unFocusAllFocusNode();
-            } else {
-              // To update
-              final person = Person(widget.nameController.text.trim(),
-                  int.tryParse(widget.ageController.text.trim()) ?? 0);
-          
-              updatePerson(person, indexToUpdate!);
-              widget.nameController.clear();
-              widget.ageController.clear();
-              saveButtonMode = SaveButtonMode.save;
-              indexToUpdate = null;
-              _unFocusAllFocusNode();
-            }
+        ValueListenableBuilder<SaveButtonMode>(
+          valueListenable: widget.saveButtonMode,
+          builder: (context, mode, _) {
+            return ElevatedButton(
+              onPressed: () {
+                final name = widget.nameController.text.trim();
+                final ageText = widget.ageController.text.trim();
+
+                if (name.isEmpty || ageText.isEmpty) {
+                  _showSnackbar(context, "Please enter all details");
+                  return;
+                }
+
+                final age = int.tryParse(ageText);
+                if (age == null) {
+                  _showSnackbar(context, "Please enter a valid age");
+                  return;
+                }
+
+                final person = Person(name, age);
+
+                if (mode == SaveButtonMode.save) {
+                  addPerson(person);
+                } else {
+                  updatePerson(person, widget.indexToUpdate.value!);
+                  widget.saveButtonMode.value = SaveButtonMode.save;
+                  widget.indexToUpdate.value = null;
+                }
+
+                widget.nameController.clear();
+                widget.ageController.clear();
+                _unFocusAllFocusNode();
+              },
+              style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      mode == SaveButtonMode.save ? Colors.green : Colors.blue,
+                  foregroundColor: Colors.white),
+              child: Text(mode == SaveButtonMode.save ? "Save" : "Update"),
+            );
           },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: saveButtonMode == SaveButtonMode.save
-                ? Colors.green
-                : Colors.blue,
-            foregroundColor: Colors.white,
-          ),
-          child:
-              Text(saveButtonMode == SaveButtonMode.save ? "Save" : "Update"),
         ),
         const SizedBox(
           height: 8,
@@ -103,5 +122,3 @@ class _AddPersonWidgetState extends State<AddPersonWidget> {
     );
   }
 }
-
-

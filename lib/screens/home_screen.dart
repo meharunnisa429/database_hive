@@ -18,9 +18,14 @@ class _HomeScreenState extends State<HomeScreen> {
   late final TextEditingController _ageController;
   late final FocusNode _nameFocusNode;
   late final FocusNode _ageFocus;
+
+  final ValueNotifier<SaveButtonMode> saveButtonMode =
+      ValueNotifier(SaveButtonMode.save);
+
+  final ValueNotifier<int?> indexToUpdate = ValueNotifier(null);
+
   @override
   void initState() {
-    // TODO: implement initState
     _nameController = TextEditingController();
     _ageController = TextEditingController();
     _nameFocusNode = FocusNode();
@@ -35,15 +40,14 @@ class _HomeScreenState extends State<HomeScreen> {
     _nameFocusNode.dispose();
     _ageFocus.dispose();
     await boxPerson.close();
-
     super.dispose();
   }
 
   void bringPersonToUpdate(Person person, int index) async {
     _nameController.text = person.name;
     _ageController.text = person.age.toString();
-    indexToUpdate = index;
-    saveButtonMode = SaveButtonMode.edit;
+    indexToUpdate.value = index;
+    saveButtonMode.value = SaveButtonMode.edit;
   }
 
   @override
@@ -64,12 +68,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 ageController: _ageController,
                 nameFocusNode: _nameFocusNode,
                 ageFocusNode: _ageFocus,
+                saveButtonMode: saveButtonMode,
+                indexToUpdate: indexToUpdate, 
               ),
               // person list
               Expanded(child: ListPersonWidget(
-                callback: (person, index) {
-                  bringPersonToUpdate(person, index);
-                },
+                callback: bringPersonToUpdate
               )),
             ],
           ),
@@ -80,10 +84,3 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 enum SaveButtonMode { save, edit }
-
-
-
-
-
-
-

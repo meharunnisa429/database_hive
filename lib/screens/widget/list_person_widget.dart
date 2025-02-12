@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:database_hive_2/database/functions/db_functions.dart';
 import 'package:database_hive_2/database/model/person.dart';
 import 'package:database_hive_2/main.dart';
